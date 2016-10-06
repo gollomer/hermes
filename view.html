@@ -24,14 +24,24 @@
       var name = prompt('Name');
       var id = prompt('ID');
       var socket = io();
-      socket.emit('registerUser',{id:id,name:name});
+      console.log(socket.emit('list'));
+      socket.emit('register',{id:id,name:name});
       $('form').submit(function(){
-        socket.emit('chat message', $('#m').val());
+        socket.emit('messageRoom', {room:'public',message:$('#m').val()});
         $('#m').val('');
         return false;
       });
-      socket.on('chat message', function(msg){
-        $('#messages').append($('<li>').text(msg));
+
+      socket.on('message', function(msg){
+        $('#messages').append($('<li>').text(msg.user.name+':'+msg.message));
+      });
+
+      socket.on('userJoined', function(msg){
+        $('#messages').append($('<li>').text('A new user '+msg.name+' has joined'));
+      });
+
+      socket.on('userLeft', function(msg){
+        $('#messages').append($('<li>').text('The user '+msg.name+' has left'));
       });
     </script>
   </body>
