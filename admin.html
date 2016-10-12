@@ -18,12 +18,12 @@
     <form action="">
       <input id="m" autocomplete="off" /><button>Send</button>
     </form>
-    <script src="/socket.io/socket.io.js"></script>
+      <script src="http://localhost:3000/socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
-      var name = prompt('Admin');
-      var id = prompt('11223344556677889900');
-      var socket = io();
+      var name ='Admin';
+      var id = '11223344556677889900';
+      var socket = io('http://localhost:3000');
       socket.emit('registerAdmin',{id:id,name:name});
 /*      $('form').submit(function(){
         socket.emit('messageRoom', {room:'public',message:$('#m').val()});

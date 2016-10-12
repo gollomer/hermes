@@ -10,28 +10,7 @@ app.get('/', function(req, res){
 app.get('/admin', function(req, res){
   res.sendFile('/var/www/projects/projects4me/htdocs/hermes/admin.html');
 });
-/*
-io.use(function(socket, next){
-  //console.log(socket.request.headers.origin);
 
-  if (socket.request.headers.origin) {
-    var matches = url.parse(socket.request.headers.origin).host.match(/(([^.]+)\.)?prometheus\.com/);
-    //var matches = origin.host.match(/(([^.]+)\.)?prometheus\.com/);
-
-    var subdomain = null;
-    if (matches !== null){
-      subdomain = matches[2];
-
-      // switch the namespace of the socket
-      console.log(subdomain);
-      socket.nsp.name='/'+subdomain;
-      console.log(socket);
-    }
-  }
-  //next(new Error('Authentication error'));
-});
-*/
-//var nsp = io.of('/prometheus');
 io.on('connection', function(socket){
   console.log('a user connected');
 
@@ -63,7 +42,7 @@ io.on('connection', function(socket){
 
       if (matches !== null){
         socket.account = matches[2];
-
+        socket.account = "abc";
         // switch the namespace of the socket
         socket.join('/'+socket.account+'/public');
         socket.emit('message','Welcome to projects4me');
@@ -87,23 +66,24 @@ io.on('connection', function(socket){
     var res = [];
     var ns = io.of("/");
 
+    // If we know the domain of the user who is trying to connect then
     if (socket.account !== undefined)
     {
+      // initiate the public roomId for the socket
       var roomId = '/'+socket.account+'/public';
+
+      // If we had the namespace initiated
       if (ns) {
+        // Figure out all the connected users in the namespace
         for (var id in ns.connected) {
-          if(roomId) {
-            if(ns.connected[id].rooms.public !== undefined)
-            {
-                res.push(ns.connected[id].user);
-                //console.log(ns.connected[id].rooms.public);
-                //console.log(ns);
-            }
+          // If they are connected in the public room then add them to the list.
+          if(ns.connected[id].rooms[roomId] !== undefined)
+          {
+              res.push(ns.connected[id].user);
           }
         }
       }
     }
-    res = [socket.user];
     return res;
   });
 
@@ -115,11 +95,15 @@ io.on('connection', function(socket){
    * @method joinRoom
    * @module chat
    * @submodule prometheus
+   * @todo validate the room name
    */
   socket.on('joinRoom',function(room){
     if (socket.account !== undefined)
     {
-      socket.join('/'+socket.account+'/'+room);
+      if (true) // validate the room name
+      {
+        socket.join('/'+socket.account+'/'+room);
+      }
     }
   });
 
@@ -134,11 +118,21 @@ io.on('connection', function(socket){
   socket.on('invite',function(data){
     if (socket.account !== undefined)
     {
-      for (var user in data.users) {
-        if (data.hasOwnProperty(id)){
-          // Find the user in the socket list
 
-          // foundSocket.join(data.room);
+      for (var user in data.users) {
+        if (data.users[user].hasOwnProperty('id')){
+          userId = data.users[user].id;
+          // Find the user in the socket list
+          var ns = io.of("/");
+          for (var id in ns.connected) {
+            // If they are connected in the public room then add them to the list.
+            var temp = ns.connected[id];
+            console.log(temp.user);
+            if (ns.connected[id].user.id === userId)
+            {
+            //      ns.connected[id].join(data.room);
+            }
+          }
         }
       }
     }
@@ -178,42 +172,7 @@ io.on('connection', function(socket){
     }
   });
 
-
-
-
-
-
-/*
-
-
-  socket.on('disconnect', function(){
-    console.log('user disconnected');
-  });
-
-  socket.on('registerUser', function(data){
-    console.log(data);
-    socket.username = data.name;
-    socket.room = data.id;
-    socket.join(data.id);
-    socket.emit('Welcome to projects4me','everyone');
-  });
-
-  socket.on('chat message', function(msg){
-    io.to(socket.room).emit('chat message', socket.username +': '+msg);
-  });
-
-
-  socket.on('list', function(msg){
-    var room = socket.room;
-    //console.log(Object.key(io.nsps['/'].adapter.rooms['1'].sockets));
-    var clients = io.sockets.clients();
-    //io.to(socket.room).emit('chat message', clients);
-    console.log(scoket.username);
-  });
-  */
 });
-
-//io.emit('some event', { for: 'everyone' });
 
 http.listen(3000, function(){
   console.log('listening on *:3000');
