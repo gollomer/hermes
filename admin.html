@@ -23,8 +23,8 @@
     <script>
       var name ='Admin';
       var id = '11223344556677889900';
-      var socket = io('http://localhost:3000');
-      socket.emit('registerAdmin',{id:id,name:name});
+      var socket = io('http://localhost:3000/admin');
+      socket.emit('register',{id:id,name:name});
 /*      $('form').submit(function(){
         socket.emit('messageRoom', {room:'public',message:$('#m').val()});
         $('#m').val('');

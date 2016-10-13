@@ -21,11 +21,17 @@
     <script src="http://localhost:3000/socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
-      var name = prompt('Name');
-      var id = prompt('ID');
+      var name = 'Hammad';
+      var id = '2';
       var socket = io('http://localhost:3000');
-      console.log(socket.emit('list'));
       socket.emit('register',{id:id,name:name});
+      // console.log('requesting the list of users');
+      // socket.emit('list');
+      // console.log('Joining the room');
+      // socket.emit('joinRoom','abee');
+      // console.log('Inviting users to the room');
+      // console.log(socket.emit('invite',{users:[{id:1},{id:2}],room:'abee'}));
+
       $('form').submit(function(){
         socket.emit('messageRoom', {room:'public',message:$('#m').val()});
         $('#m').val('');

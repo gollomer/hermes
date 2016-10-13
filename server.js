@@ -11,6 +11,12 @@ app.get('/admin', function(req, res){
   res.sendFile('/var/www/projects/projects4me/htdocs/hermes/admin.html');
 });
 
+/**
+ * This is the io for Prometheus
+ *
+ * @module chat
+ * @submodule prometheus
+ */
 io.on('connection', function(socket){
   console.log('a user connected');
 
@@ -45,7 +51,7 @@ io.on('connection', function(socket){
         socket.account = "abc";
         // switch the namespace of the socket
         socket.join('/'+socket.account+'/public');
-        socket.emit('message','Welcome to projects4me');
+        socket.emit('message',{user:{id:'alpha',name:'system'},message:'Welcome to projects4me, Sailor!!'});
 
         io.to('/'+socket.account+'/public').emit('userJoined',user);
       }
@@ -84,6 +90,7 @@ io.on('connection', function(socket){
         }
       }
     }
+    console.log(res);
     return res;
   });
 
@@ -124,13 +131,17 @@ io.on('connection', function(socket){
           userId = data.users[user].id;
           // Find the user in the socket list
           var ns = io.of("/");
-          for (var id in ns.connected) {
-            // If they are connected in the public room then add them to the list.
-            var temp = ns.connected[id];
-            console.log(temp.user);
-            if (ns.connected[id].user.id === userId)
+          for (var identifier in ns.connected) {
+
+            // If user is defined
+            if (ns.connected[identifier].user !== undefined)
             {
-            //      ns.connected[id].join(data.room);
+              // and the id registered with in the socket is found
+              if (ns.connected[identifier].user.id == userId)
+              {
+                // then add the user to the room
+                ns.connected[identifier].join(data.room);
+              }
             }
           }
         }
@@ -138,13 +149,23 @@ io.on('connection', function(socket){
     }
   });
 
+  /**
+   * This function handles the event 'messageRoom' and is used in order to send
+   * message to a room.
+   *
+   * @method message
+   * @module chat
+   * @submodule prometheus
+   * @todo room validation, should be defined and cannot be public rooms
+   */
   socket.on('messageRoom',function(data){
+      console.log('Sending message:"'+data.message+'" to room '+data.room);
       io.to(data.room).emit('message',{user:socket.user,message:data.message});
   });
 
   /**
    * This function handles the event 'message' and is used in order to send
-   * message (to whom?)
+   * receive message from Prometheus
    *
    * @method message
    * @module chat
@@ -152,7 +173,7 @@ io.on('connection', function(socket){
    */
   socket.on('message',function(message){
     console.log('Sending message:"'+message+'" to room '+socket.room);
-      io.to(socket.room).emit('message',{user:socket.user,message:message});
+      //io.to(socket.room).emit('message',{user:socket.user,message:message});
   });
 
 
@@ -170,6 +191,30 @@ io.on('connection', function(socket){
     {
       io.to('/'+socket.account+'/public').emit('userLeft',{user:socket.user});
     }
+  });
+});
+
+
+var admin = io.of('/admin');
+admin.on('connection', function(socket){
+  console.log('An admin connected');
+
+  socket.on('register',function(data){
+
+    // User information
+    var user = {
+        id:data.id,
+        name:data.name,
+    };
+    console.log('Registering user:'+user.name+" with id:"+user.id);
+
+    // Register the user information in the system
+    socket.user = user;
+    socket.join('public');
+    socket.emit('message',{user:{id:'alpha',name:'system'},message:'Welcome to projects4me, Captain!!'});
+    io.to('public').emit('userJoined',user);
+
+    // Send the user a welcome message
   });
 
 });
