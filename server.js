@@ -17,7 +17,8 @@ app.get('/admin', function(req, res){
  * @module chat
  * @submodule prometheus
  */
-io.on('connection', function(socket){
+var prometheus = io.of('/');
+prometheus.on('connection', function(socket){
   console.log('a user connected');
 
   /**
@@ -90,8 +91,9 @@ io.on('connection', function(socket){
         }
       }
     }
+    socket.emit('userList',res);
     console.log(res);
-    return res;
+    //return res;
   });
 
   /**
@@ -121,7 +123,7 @@ io.on('connection', function(socket){
    * @method invite
    * @module chat
    * @submodule prometheus
-   */
+   *//*
   socket.on('invite',function(data){
     if (socket.account !== undefined)
     {
@@ -147,7 +149,7 @@ io.on('connection', function(socket){
         }
       }
     }
-  });
+  });*/
 
   /**
    * This function handles the event 'messageRoom' and is used in order to send
@@ -213,8 +215,82 @@ admin.on('connection', function(socket){
     socket.join('public');
     socket.emit('message',{user:{id:'alpha',name:'system'},message:'Welcome to projects4me, Captain!!'});
     io.to('public').emit('userJoined',user);
-
     // Send the user a welcome message
+  });
+
+});
+
+var gaia = io.of('/gaia');
+gaia.on('connection', function(socket){
+  console.log('Gaia has reached out');
+
+  socket.on('listUsers',function(data){
+
+  });
+
+  socket.on('listRooms',function(data){
+
+  });
+
+  /**
+   * This function handles the event 'createRoom' and is used in order to create
+   * a room and add a user in it
+   *
+   * @method invite
+   * @module chat
+   * @submodule prometheus
+   * @todo a concern can be with multi-tenancy and growing number of users as the for loop below can be very long
+   */
+  socket.on('createRoom',function(data){
+    console.log(data);
+
+
+    // Get the namespace for prometheus
+    var ns = io.of("/");
+
+    // Traverse through all the connected users and find the socket we need
+    for (var identifier in ns.connected) {
+      // If user is defined
+      if (ns.connected[identifier].user !== undefined)
+      {
+        console.log("A user is defined with id:"+ns.connected[identifier].user.id );
+        // and the id registered with in the socket is found
+        if (ns.connected[identifier].user.id == data.user)
+        {
+          console.log('Adding '+data.user+' in the room /'+data.tenant+'/'+data.room);
+          // then add the user to the room
+          ns.connected[identifier].join('/'+data.tenant+'/'+data.room);
+        }
+      }
+    }
+  });
+
+  /**
+   * This function handles the event 'invite' and is used in order to invite
+   * users to a room
+   *
+   * @method invite
+   * @module chat
+   * @submodule prometheus
+   */
+  socket.on('invite',function(data){
+    // Get the namespace for prometheus
+    var ns = io.of("/");
+
+    // Traverse through all the connected users and find the socket we need
+    for (var identifier in ns.connected) {
+      // If user is defined
+      if (ns.connected[identifier].user !== undefined)
+      {
+        // and the id registered with in the socket is found
+        if (ns.connected[identifier].user.id == data.user)
+        {
+          console.log('Adding '+data.user+' in the room /'+data.tenant+'/'+data.room);
+          // then add the user to the room
+          ns.connected[identifier].join('/'+data.tenant+'/'+data.room);
+        }
+      }
+    }
   });
 
 });

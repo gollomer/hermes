@@ -21,7 +21,7 @@
     <script src="http://localhost:3000/socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
-      var name = 'Hammad';
+      var name = 'Mahnoor';
       var id = '2';
       var socket = io('http://localhost:3000');
       socket.emit('register',{id:id,name:name});
@@ -39,7 +39,20 @@
       });
 
       socket.on('message', function(msg){
-        $('#messages').append($('<li>').text(msg.user.name+':'+msg.message));
+        if (msg.user !== undefined)
+        {
+          $('#messages').append($('<li>').text(msg.user.name+':'+msg.message));
+        }
+        else if (msg.message !== undefined){
+          $('#messages').append($('<li>').text(msg.message));
+        }
+        else {
+          $('#messages').append($('<li>').text(msg));
+        }
+      });
+
+      socket.on('userList', function(data){
+          console.log(data);
       });
 
       socket.on('userJoined', function(msg){
