@@ -4,11 +4,11 @@ var io = require('socket.io')(http);
 var url = require("url");
 
 app.get('/', function(req, res){
-  res.sendFile('/var/www/projects/projects4me/htdocs/hermes/view.html');
+  res.sendFile('/home/ubuntu/PhpstormProjects/hermes/view.html');
 });
 
 app.get('/admin', function(req, res){
-  res.sendFile('/var/www/projects/projects4me/htdocs/hermes/admin.html');
+  res.sendFile('/home/ubuntu/PhpstormProjects/hermes/admin.html');
 });
 
 /**
@@ -44,12 +44,15 @@ prometheus.on('connection', function(socket){
     socket.user = user;
 
     // Add the user to the public room based on the tenant information
+    console.log(socket.request.headers.origin);
     if (socket.request.headers.origin) {
-      var matches = url.parse(socket.request.headers.origin).host.match(/(([^.]+)\.)?prometheus\.com/);
+      var matches = url.parse(socket.request.headers.origin).host.match(/(([^.]+)\.)?projects4me/);
 
       if (matches !== null){
         socket.account = matches[2];
         socket.account = "abc";
+        console.log('joining user to abc');
+
         // switch the namespace of the socket
         socket.join('/'+socket.account+'/public');
         socket.emit('message',{user:{id:'alpha',name:'system'},message:'Welcome to projects4me, Sailor!!'});
@@ -175,7 +178,7 @@ prometheus.on('connection', function(socket){
    */
   socket.on('message',function(message){
     console.log('Sending message:"'+message+'" to room '+socket.room);
-      //io.to(socket.room).emit('message',{user:socket.user,message:message});
+      io.to(socket.room).emit('message',{user:socket.user,message:message});
   });
 
 
